@@ -1,0 +1,21 @@
+{% extends 'base/popup.html' %}
+
+{% block popup %}
+<div class="pop-window">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskModalLabel">New message</h5>
+                <a class="btn-close" aria-label="Close" href="{% url 'home' %}"></a>
+            </div>
+            <div class="modal-body">
+                {{ form }}
+            </div>
+            <div class="modal-footer">
+                <a type="button" class="btn btn-secondary" href="{% url 'home' %}">Close</a>
+                <button type="button" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

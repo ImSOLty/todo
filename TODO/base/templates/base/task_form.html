@@ -1,0 +1,38 @@
+{% extends 'base/popup.html' %}
+
+{% block popup %}
+<div class="pop-window">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'save_task' obj.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <label style="display: none">
+                        <input type="number" name="target" value="{{target.id}}">
+                    </label>
+                    <div class="mb-2">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" name="title" id="title" value="{{obj.title}}">
+                    </div>
+                    <div class="mb-2">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea type="text" class="form-control" name="description" id="description">{{obj.description}}</textarea>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="completed" name="completed"
+                               {% if obj.completed %} checked {% endif %}>
+                        <label class="form-check-label" for="completed">
+                            Completed
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a type="button" class="btn btn-secondary" href="{% url 'home' %}">Close</a>
+                    <button type="submit" class="btn btn-danger" formaction="{% url 'delete_task' obj.id %}">Delete</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
