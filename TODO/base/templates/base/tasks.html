@@ -17,8 +17,9 @@
 
 <div class="d-grid gap-3" style="width: 90vw">
     <div>
-        <h1 class="card-title text-center">Hello, Vadim!</h1>
-        <h3 class="card-text text-center">You have X incomplete tasks in Y groups</h3>
+        <h1 class="card-title text-center">Hello, {{request.user.first_name}}!</h1>
+        <h3 class="card-text text-center">You have {{uncompleted_tasks.count}} incomplete tasks in {{groups.count}}
+            groups</h3>
     </div>
 
     <div class="row justify-content-md-center h-75">
@@ -28,48 +29,57 @@
             </div>
         </div>
         <div class="d-grid gap-3 col-9">
-            <button type="button" class="btn rounded-pill btn-secondary">Add new group</button>
+            <a type="button" class="btn rounded-pill btn-secondary"
+               href="{% url 'home' %}?form_type=group&action=add">Add new group
+            </a>
             {% for group in groups %}
             <div class="card border-secondary">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h4><a href="#" class="link-secondary"> {{group.title}} </a></h4>
-                            {% for tag in group.tag.all %}
-                            <span class="badge rounded-pill text-dark" style="background-color:{{tag.color}};">{{tag.title}}</span>
-                            {% endfor %}
+                            <h4><a href="{% url 'home' %}?form_type=group&action=edit&target={{group.id}}"
+                                   class="link-secondary"> {{group.title}} </a></h4>
+                            <div class="badge rounded-pill text-dark"
+                                 style="background-color:{{group.type_tag.color}};">{{group.type_tag}}
+                            </div>
+                            <p class="fw-lighter">{{group.description}}</p>
                         </div>
-                        <a type="button" class="btn rounded-pill btn-secondary"
-                           href="{% url 'home' %}?form_type=task&action=add&target={{group.id}}">Add new task</a>
+                        <div class="d-flex flex-column align-items-center justify-content-center">
+                            <form class="mb-1" method="POST" action="{% url 'delete_group' group.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn rounded-pill btn-danger">Delete</button>
+                            </form>
+                            <a type="button" class="btn rounded-pill btn-secondary"
+                               href="{% url 'home' %}?form_type=task&action=add&target={{group.id}}">Add new task</a>
+                        </div>
                     </div>
                 </div>
                 {% if group.task_set.count != 0 %}
                 <ul class="list-group list-group-flush">
                     {% for task in group.task_set.all %}
-                    {% if task.completed %}
-                    <li class="list-group-item bg-secondary">
+
+                    <li class="list-group-item" style="background-color:
+                    {% if task.completed %}lightgreen
+                    {% elif task.remaining_days > 0 %}white
+                    {% else %}lightpink
+                    {% endif %}">
                         <div class="d-flex justify-content-between align-items-center">
-                            <a href="{% url 'home' %}?form_type=task&action=edit&target={{task.id}}"
-                               class="link-light">{{task.title}}</a>
-                            <form method="POST" action="{% url 'delete_task' task.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-close btn-close-white" aria-label="Close"></button>
-                            </form>
-                        </div>
-                    </li>
-                    {% else %}
-                    <li class="list-group-item bg-light">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <a href="{% url 'home' %}?form_type=task&action=edit&target={{task.id}}"
-                               class="link-secondary">{{task.title}}</a>
+                            <div>
+                                <a href="{% url 'home' %}?form_type=task&action=edit&target={{task.id}}"
+                                   class="link-secondary">{{task.title}}</a>
+                                <span class="fw-lighter fst-italic">
+                                    {% if task.completed %}(Completed)
+                                    {% elif task.remaining_days > 0 %}({{task.remaining_days}} days remaining)
+                                    {% else %}(Overdued)
+                                    {% endif %}
+                                </span>
+                            </div>
                             <form method="POST" action="{% url 'delete_task' task.id %}">
                                 {% csrf_token %}
                                 <button type="submit" class="btn-close" aria-label="Close"></button>
                             </form>
                         </div>
                     </li>
-                    {% endif %}
-
                     {% endfor %}
                 </ul>
                 {% endif %}
@@ -79,8 +89,10 @@
     </div>
 </div>
 
-{% if form %}
+{% if form and form_type == 'task' %}
 {% include 'base/task_form.html' %}
+{% elif form and form_type == 'group' %}
+{% include 'base/group_form.html' %}
 {% endif %}
 
 

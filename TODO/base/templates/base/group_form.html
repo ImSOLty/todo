@@ -1,21 +1,43 @@
-{% extends 'base/popup.html' %}
+{% extends 'base/popup_form.html' %}
 
 {% block popup %}
-<div class="pop-window">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="taskModalLabel">New message</h5>
-                <a class="btn-close" aria-label="Close" href="{% url 'home' %}"></a>
-            </div>
-            <div class="modal-body">
-                {{ form }}
-            </div>
-            <div class="modal-footer">
-                <a type="button" class="btn btn-secondary" href="{% url 'home' %}">Close</a>
-                <button type="button" class="btn btn-primary">Submit</button>
-            </div>
+<form method="POST" action="
+            {% if obj.id == -1 %}
+                {% url 'create_group' %}
+            {% else %}
+                {% url 'update_group' obj.id %}
+            {% endif %}">
+    {% csrf_token %}
+    <div class="modal-body">
+        <div class="mb-2">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" required class="form-control" name="title" id="title" value="{{obj.title}}" required>
+        </div>
+        <div class="mb-2">
+            <label for="description" class="form-label">Description</label>
+            <textarea type="text" class="form-control" name="description"
+                      id="description">{{obj.description}}</textarea>
+        </div>
+        <div class="mb-2">
+            <label for="type_tag" class="form-label">Tag</label>
+            <input class="form-control" list="datalistOptions" id="type_tag" placeholder="Find tag or add a new one..."
+                   value="{{obj.type_tag}}" name="type_tag">
+            <datalist id="datalistOptions">
+                {% for tag in tags %}
+                <option value="{{tag.title}}" class="rounded mb-1">
+                    {{tag.title}}
+                </option>
+                {% endfor %}
+            </datalist>
         </div>
     </div>
-</div>
+    <div class="modal-footer">
+        <a type="button" class="btn btn-secondary" href="{% url 'home' %}">Close</a>
+        {% if obj.id != -1 %}
+        <button type="submit" class="btn btn-danger" formaction="{% url 'delete_group' obj.id %}">Delete
+        </button>
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
 {% endblock %}

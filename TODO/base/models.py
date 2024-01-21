@@ -1,9 +1,10 @@
+from datetime import datetime
+
 from django.db import models
-from django.contrib.auth.models import User
+from django.utils import timezone
+from users.models import User
 from colorfield.fields import ColorField
 
-
-# Create your models here.
 
 class Template(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -18,10 +19,13 @@ class Template(models.Model):
 class Tag(Template):
     color = ColorField()
 
+    class Meta:
+        ordering = ['title']
+
 
 class TaskGroup(Template):
     description = models.TextField(blank=True, null=True)
-    tag = models.ManyToManyField(Tag)
+    type_tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['title']
@@ -31,6 +35,11 @@ class Task(Template):
     group = models.ForeignKey(TaskGroup, on_delete=models.CASCADE, null=True)
     description = models.TextField(blank=True, null=True)
     completed = models.BooleanField(default=False)
+    due = models.DateField(blank=False, default=timezone.now)
+
+    @property
+    def remaining_days(self):
+        return (self.due - datetime.today().date()).days
 
     class Meta:
-        ordering = ['completed', 'title']
+        ordering = ['completed', 'due', 'title']
