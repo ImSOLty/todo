@@ -1,0 +1,56 @@
+{% extends 'main.html' %}
+
+{% block content %}
+{% if page == 'login' %}
+<form class="d-flex flex-column" method="POST" action="{% url 'login' %}" style="margin-top:2%">
+    {% csrf_token %}
+    <div class="form-group mb-2">
+        <label for="email">Email address</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email">
+    </div>
+    <div class="form-group mb-2">
+        <label for="password">Password</label>
+        <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+    </div>
+    <ul>
+        {% for message in messages %}
+        <li style="color: red">{{message}}</li>
+        {% endfor %}
+    </ul>
+    <div class="mb-2">Not registered yet? <a href="{% url 'register' %}">Sign up</a></div>
+    <button type="submit" class="btn btn-secondary rounded-pill ">Login</button>
+</form>
+{% else %}
+<form class="d-flex flex-column" method="POST" action="{% url 'register' %}" style="margin-top:2%">
+    {% csrf_token %}
+    <div class="row mb-2">
+        <div class="form-group col">
+            <label for="first_name">First name</label>
+            <input type="text" class="form-control" id="first_name" name="first_name" placeholder="John" required>
+        </div>
+        <div class="form-group col">
+            <label for="last_name">Last name</label>
+            <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Doe" required>
+        </div>
+    </div>
+    <div class="form-group mb-2">
+        <label for="email">Email address</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter email" required>
+    </div>
+    <div class="form-group">
+        <label for="password1">Password</label>
+        <input type="password" class="form-control mb-1" id="password1" name="password1" placeholder="Password"
+               required>
+        <input type="password" class="form-control" id="password2" name="password2" placeholder="Repeat password"
+               required>
+    </div>
+    <ul>
+        {% for message in messages %}
+        {{message}}
+        {% endfor %}
+    </ul>
+    <div class="mb-2">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
+    <button type="submit" class="btn btn-secondary rounded-pill ">Sign up</button>
+</form>
+{% endif %}
+{% endblock %}

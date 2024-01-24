@@ -9,4 +9,4 @@ class User(AbstractUser):
         return f'{self.first_name} {self.last_name}'
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = []

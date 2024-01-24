@@ -1,9 +1,9 @@
 from django.test import TestCase, Client
-from ..models import User
+from users.models import User
 
 
 class BehaviourTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create(username='test_user', password='test_password')
         self.client = Client()
-        self.client.login(username='test_user', password='test_password')
+        self.test_user = User.objects.create_user(username="test", email='test@test.com', password='12345')
+        self.client.login(username="test@test.com", password='12345')

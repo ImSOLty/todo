@@ -3,7 +3,8 @@ import random
 from django.test import TestCase, Client
 from django.urls import reverse, resolve
 from .. import views
-from ..models import TaskGroup, Task, User, Tag
+from ..models import TaskGroup, Task, Tag
+from users.models import User
 from .helper import random_color, random_str, random_data_task, random_data_taskgroup
 
 
@@ -11,8 +12,8 @@ class TestToDo(TestCase):
     def setUp(self):
         self.client = Client()
         self.home_page = reverse('home')
-        self.test_user = User.objects.create_user(username='test_user', password='12345')
-        self.client.login(username='test_user', password='12345')
+        self.test_user = User.objects.create_user(username="test", email='test@test.com', password='12345')
+        self.client.login(username="test@test.com", password='12345')
         self.test_tags = [Tag.objects.create(user=self.test_user, title=random_str(), color=random_color())
                           for _ in range(2)]
         self.test_groups = [TaskGroup.objects.create(

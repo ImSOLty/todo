@@ -3,6 +3,7 @@ import random
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task, TaskGroup, Tag
 from .forms import TaskForm, TaskGroupForm
+from django.db.models import Q
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 
@@ -33,7 +34,7 @@ def home(request):
                 form = TaskGroupForm(instance=obj)
     context = {'groups': TaskGroup.objects.filter(user=request.user), 'form': form, 'target': target, 'obj': obj,
                'form_type': form_type, 'tags': Tag.objects.filter(user=request.user),
-               'uncompleted_tasks': Task.objects.filter(completed=False)}
+               'uncompleted_tasks': Task.objects.filter(Q(completed=False) & Q(user=request.user))}
     return render(request, 'base/tasks.html', context=context)
 
 
@@ -72,7 +73,7 @@ def delete_task(request, pk):
 @login_required(login_url='login')
 @require_http_methods(['POST'])
 def create_group(request):
-    tag = Tag.objects.filter(title=request.POST.get('type_tag')).first()
+    tag = Tag.objects.filter(Q(title=request.POST.get('type_tag')) & Q(user=request.user)).first()
     if tag is None:
         tag = Tag.objects.create(title=request.POST.get('type_tag'), user=request.user,
                                  color=('#%06X' % random.randint(0, 256 ** 3 - 1)))
@@ -84,7 +85,7 @@ def create_group(request):
 @login_required(login_url='login')
 @require_http_methods(['POST'])
 def update_group(request, pk):
-    tag = Tag.objects.filter(title=request.POST.get('type_tag')).first()
+    tag = Tag.objects.filter(Q(title=request.POST.get('type_tag')) & Q(user=request.user)).first()
     if tag is None:
         tag = Tag.objects.create(title=request.POST.get('type_tag'), user=request.user,
                                  color=('#%06X' % random.randint(0, 256 ** 3 - 1)))
