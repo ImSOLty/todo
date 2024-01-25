@@ -57,3 +57,29 @@ def register_user(request):
 def logout_user(request):
     logout(request)
     return redirect('login')
+
+
+@require_http_methods(['GET', 'POST'])
+def settings(request):
+    context = {}
+    user = request.user
+    avatar_file = request.FILES['avatar'] if 'avatar' in request.FILES.keys() else request.user.avatar
+    background_file = request.FILES['background'] if 'background' in request.FILES.keys() else request.user.background
+    if request.method == 'POST':
+        if request.POST.get('password1') or request.POST.get('password2'):
+            form = UserRegisterForm(instance=user, data=request.POST)
+            if form.is_valid():
+                user = form.save(commit=False)
+                user.email = user.email.lower()
+                user.avatar = avatar_file
+                user.background = background_file
+                user.save()
+                login(request, user)
+        else:
+            user.first_name = request.POST.get('first_name')
+            user.last_name = request.POST.get('last_name')
+            user.email = request.POST.get('email').lower()
+            user.avatar = avatar_file
+            user.background = background_file
+            user.save()
+    return render(request, 'users/settings.html', context=context)

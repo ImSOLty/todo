@@ -1,0 +1,65 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+{% load static %}
+
+<script src="{% static 'js/image_show.js' %}"></script>
+<form class="d-flex flex-column" method="POST" action="{% url 'settings' %}" style="margin-top:2%"
+      enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="row">
+        <div class="col">
+            <div class="d-flex justify-content-center mb-4">
+                <img id="selectedAvatar" src="{% static request.user.avatar %}"
+                     class="rounded-circle border" style="width: 200px; height: 200px; object-fit: cover;"/>
+            </div>
+            <div class="d-flex justify-content-center">
+                <div class="btn btn-secondary rounded-pill">
+                    <label class="form-label text-white m-1" for="avatar">Choose avatar</label>
+                    <input type="file" class="form-control d-none" id="avatar" name="avatar"
+                           onchange="displaySelectedImage(event, 'selectedAvatar')"/>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="d-flex justify-content-center mb-4">
+                <img id="selectedBackground" src="{% static request.user.background %}"
+                     class="rounded border" style="width: 200px; height: 200px; object-fit: cover;"/>
+            </div>
+            <div class="d-flex justify-content-center">
+                <div class="btn btn-secondary rounded-pill">
+                    <label class="form-label text-white m-1" for="background">Choose background</label>
+                    <input type="file" class="form-control d-none" id="background" name="background"
+                           onchange="displaySelectedImage(event, 'selectedBackground')"/>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="form-group col">
+            <label for="first_name">First name</label>
+            <input type="text" class="form-control" id="first_name" name="first_name"
+                   value="{{request.user.first_name}}" required>
+        </div>
+        <div class="form-group col">
+            <label for="last_name">Last name</label>
+            <input type="text" class="form-control" id="last_name" name="last_name" value="{{request.user.last_name}}"
+                   required>
+        </div>
+    </div>
+    <div class="form-group mb-2">
+        <label for="email">Email address</label>
+        <input type="email" class="form-control" id="email" name="email" value="{{request.user.email}}" required>
+    </div>
+    <div class="form-group mb-2">
+        <label for="password1">Change password</label>
+        <input type="password" class="form-control mb-1" id="password1" name="password1" placeholder="Password">
+        <input type="password" class="form-control" id="password2" name="password2" placeholder="Repeat password">
+    </div>
+    <button type="submit" class="btn btn-secondary rounded-pill ">Submit</button>
+</form>
+
+{% endblock %}

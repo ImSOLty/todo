@@ -35,11 +35,11 @@
     </div>
     <div class="modal-footer">
         <a type="button" class="btn btn-secondary" href="{% url 'home' %}">Close</a>
+        <button type="submit" class="btn btn-primary">Submit</button>
         {% if obj.id != -1 %}
         <button type="submit" class="btn btn-danger" formaction="{% url 'delete_task' obj.id %}">Delete
         </button>
         {% endif %}
-        <button type="submit" class="btn btn-primary">Submit</button>
     </div>
 </form>
 {% endblock %}

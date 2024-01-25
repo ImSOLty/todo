@@ -1,90 +1,105 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<style>
-    .pop-window {
-        position: fixed;
-        background: rgba(0, 0, 0, 0.2);
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-
-        z-index: 999;
-        margin-top: 2vh;
-    }
-</style>
-
+{% load static %}
+<script src="{% static 'js/add_tag_to_search.js' %}"></script>
 <div class="d-grid gap-3" style="width: 90vw">
     <div>
         <h1 class="card-title text-center">Hello, {{request.user.first_name}}!</h1>
         <h3 class="card-text text-center">You have {{uncompleted_tasks.count}} incomplete tasks in {{groups.count}}
-            groups</h3>
+            groups
+            {% if search != '' %}
+            for a '{{search}}' search
+            {% endif %}</h3>
     </div>
 
-    <div class="row justify-content-md-center h-75">
-        <div class="col-3">
-            <div class="md-form active-pink-2">
-                <input class="form-control" type="text" placeholder="Search" aria-label="Search">
-            </div>
-        </div>
-        <div class="d-grid gap-3 col-9">
-            <a type="button" class="btn rounded-pill btn-secondary"
-               href="{% url 'home' %}?form_type=group&action=add">Add new group
-            </a>
-            {% for group in groups %}
-            <div class="card border-secondary">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h4><a href="{% url 'home' %}?form_type=group&action=edit&target={{group.id}}"
-                                   class="link-secondary"> {{group.title}} </a></h4>
-                            <div class="badge rounded-pill text-dark"
-                                 style="background-color:{{group.type_tag.color}};">{{group.type_tag}}
-                            </div>
-                            <p class="fw-lighter">{{group.description}}</p>
-                        </div>
-                        <div class="d-flex flex-column align-items-center justify-content-center">
-                            <form class="mb-1" method="POST" action="{% url 'delete_group' group.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn rounded-pill btn-danger">Delete</button>
-                            </form>
-                            <a type="button" class="btn rounded-pill btn-secondary"
-                               href="{% url 'home' %}?form_type=task&action=add&target={{group.id}}">Add new task</a>
-                        </div>
-                    </div>
+    <div class="row justify-content-md-center">
+        <div class="col-4">
+            <form action="/" class="d-flex flex-column">
+                <select class="form-select col mb-2" name="sorted">
+                    <option value="updated" {% if sorting == 'updated' %} selected {% endif %}>Recent</option>
+                    <option value="-updated" {% if sorting == '-updated' %} selected {% endif %}>Oldest</option>
+                    <option value="title" {% if sorting == 'title' %} selected {% endif %}>Title (A-Z)</option>
+                    <option value="-title" {% if sorting == '-title' %} selected {% endif %}>Title (Z-A)</option>
+<!--                    Wow, I don't like it, can't find how to implement this without passing an array of options-->
+                </select>
+                <div class="md-form active-pink-2 d-flex flex-row mb-2">
+                    <input class="form-control me-1" type="text" placeholder="Search" aria-label="Search" name="q"
+                           id="searchbar" value="{{search}}">
                 </div>
-                {% if group.task_set.count != 0 %}
-                <ul class="list-group list-group-flush">
-                    {% for task in group.task_set.all %}
+                <div class="container-fluid mb-2">
+                    {% for tag in tags %}
+                    <input type="button" class="btn btn-secondary rounded-pill text-dark"
+                           style="background-color: {{tag.color}}; margin-bottom: 2px"
+                           onclick="addTagToSearch(event,'searchbar')" value="{{tag.title}}">
+                    {% endfor %}
+                </div>
+                <input type="submit" class="btn btn-secondary rounded-pill" value="Find">
+            </form>
+        </div>
+        <div class="col-8">
+            <div class="row mb-2">
+                <a type="button" class="btn rounded-pill btn-secondary col me-2"
+                   href="{% url 'home' %}?form_type=group&action=add">Add new group</a>
+            </div>
+            <div>
+                {% for group in groups %}
+                <div class="d-grid gap-3 ">
+                    <div class="card border-secondary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4><a href="{% url 'home' %}?form_type=group&action=edit&target={{group.id}}"
+                                           class="link-secondary"> {{group.title}} </a></h4>
+                                    <div class="badge rounded-pill text-dark"
+                                         style="background-color:{{group.type_tag.color}};">{{group.type_tag}}
+                                    </div>
+                                    <p class="fw-lighter">{{group.description}}</p>
+                                </div>
+                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                    <form class="mb-1" method="POST" action="{% url 'delete_group' group.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn rounded-pill btn-danger">Delete</button>
+                                    </form>
+                                    <a type="button" class="btn rounded-pill btn-secondary"
+                                       href="{% url 'home' %}?form_type=task&action=add&target={{group.id}}">Add new
+                                        task</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% if group.task_set.count != 0 %}
+                        <ul class="list-group list-group-flush">
+                            {% for task in group.task_set.all %}
 
-                    <li class="list-group-item" style="background-color:
+                            <li class="list-group-item" style="background-color:
                     {% if task.completed %}lightgreen
                     {% elif task.remaining_days > 0 %}white
                     {% else %}lightpink
                     {% endif %}">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <a href="{% url 'home' %}?form_type=task&action=edit&target={{task.id}}"
-                                   class="link-secondary">{{task.title}}</a>
-                                <span class="fw-lighter fst-italic">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <a href="{% url 'home' %}?form_type=task&action=edit&target={{task.id}}"
+                                           class="link-secondary">{{task.title}}</a>
+                                        <span class="fw-lighter fst-italic">
                                     {% if task.completed %}(Completed)
                                     {% elif task.remaining_days > 0 %}({{task.remaining_days}} days remaining)
                                     {% else %}(Overdued)
                                     {% endif %}
                                 </span>
-                            </div>
-                            <form method="POST" action="{% url 'delete_task' task.id %}">
-                                {% csrf_token %}
-                                <button type="submit" class="btn-close" aria-label="Close"></button>
-                            </form>
-                        </div>
-                    </li>
+                                    </div>
+                                    <form method="POST" action="{% url 'delete_task' task.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-close" aria-label="Close"></button>
+                                    </form>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
                     {% endfor %}
-                </ul>
-                {% endif %}
+                </div>
             </div>
-            {% endfor %}
         </div>
     </div>
 </div>
@@ -95,9 +110,5 @@
 {% include 'base/group_form.html' %}
 {% endif %}
 
-
-<!--{% for task in tasks %}-->
-<!--    <h1>{{task.title}}</h1>-->
-<!--{% endfor %}-->
 
 {% endblock %}

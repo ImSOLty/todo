@@ -4,7 +4,17 @@
     <meta charset="UTF-8">
     <title>TODO</title>
 </head>
-<body>
+
+{% load static %}
+
+<body style="
+background-attachment: fixed;
+    background-image: url('{% static request.user.background %}');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+        height: 100vh;
+  ">
 
 {% load bootstrap5 %}
 {% bootstrap_css %}

@@ -1,5 +1,7 @@
 import random
+import colorsys
 
+from django.core.exceptions import FieldError
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Task, TaskGroup, Tag
 from .forms import TaskForm, TaskGroupForm
@@ -8,9 +10,16 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 
 
+def generate_random_color():
+    h, s, l = random.random(), 0.5 + random.random() / 2.0, 0.4 + random.random() / 5.0
+    r, g, b = [int(256 * i) for i in colorsys.hls_to_rgb(h, l, s)]
+    return '#%02X%02X%02X' % (r, g, b)
+
+
 @login_required(login_url='login')
 @require_http_methods(['GET'])
 def home(request):
+    print(request)
     form_type = request.GET.get('form_type')
     action = request.GET.get('action')
     form = None
@@ -32,9 +41,24 @@ def home(request):
             elif action == 'edit':
                 obj = TaskGroup.objects.get(id=target)
                 form = TaskGroupForm(instance=obj)
-    context = {'groups': TaskGroup.objects.filter(user=request.user), 'form': form, 'target': target, 'obj': obj,
+
+    search = request.GET.get('q') if 'q' in request.GET.keys() else ''
+    sorting = request.GET.get('sorted') if 'sorted' in request.GET.keys() else 'updated'
+    tasks_of_search = Task.objects.filter(title__icontains=search)
+
+    groups = TaskGroup.objects.filter(
+        Q(user=request.user) & (Q(title__icontains=search) | Q(type_tag__title__icontains=search)
+                                | Q(description__icontains=search) | Q(task__in=tasks_of_search))).distinct()
+    try:
+        groups = groups.order_by(sorting)
+    except FieldError:
+        sorting = 'updated'
+
+    uncompleted_tasks = Task.objects.filter(Q(completed=False) & Q(user=request.user) & Q(group__in=groups))
+
+    context = {'groups': groups, 'form': form, 'target': target, 'obj': obj,
                'form_type': form_type, 'tags': Tag.objects.filter(user=request.user),
-               'uncompleted_tasks': Task.objects.filter(Q(completed=False) & Q(user=request.user))}
+               'uncompleted_tasks': uncompleted_tasks, 'search': search, 'sorting': sorting}
     return render(request, 'base/tasks.html', context=context)
 
 
@@ -76,7 +100,7 @@ def create_group(request):
     tag = Tag.objects.filter(Q(title=request.POST.get('type_tag')) & Q(user=request.user)).first()
     if tag is None:
         tag = Tag.objects.create(title=request.POST.get('type_tag'), user=request.user,
-                                 color=('#%06X' % random.randint(0, 256 ** 3 - 1)))
+                                 color=generate_random_color())
     TaskGroup.objects.create(user=request.user, type_tag=tag,
                              description=request.POST.get('description'), title=request.POST.get('title'))
     return redirect('home')
@@ -88,7 +112,7 @@ def update_group(request, pk):
     tag = Tag.objects.filter(Q(title=request.POST.get('type_tag')) & Q(user=request.user)).first()
     if tag is None:
         tag = Tag.objects.create(title=request.POST.get('type_tag'), user=request.user,
-                                 color=('#%06X' % random.randint(0, 256 ** 3 - 1)))
+                                 color=generate_random_color())
     group = get_object_or_404(TaskGroup, id=pk)
     group.description = request.POST.get('description')
     group.title = request.POST.get('title')

@@ -137,5 +137,6 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 
-# .idea hide
+# custom directories to hide
 .idea/*
+static/media/*

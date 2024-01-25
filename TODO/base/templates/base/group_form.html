@@ -21,7 +21,7 @@
         <div class="mb-2">
             <label for="type_tag" class="form-label">Tag</label>
             <input class="form-control" list="datalistOptions" id="type_tag" placeholder="Find tag or add a new one..."
-                   value="{{obj.type_tag}}" name="type_tag">
+                   value="{{obj.type_tag}}" name="type_tag" required>
             <datalist id="datalistOptions">
                 {% for tag in tags %}
                 <option value="{{tag.title}}" class="rounded mb-1">
@@ -33,11 +33,12 @@
     </div>
     <div class="modal-footer">
         <a type="button" class="btn btn-secondary" href="{% url 'home' %}">Close</a>
+        <button type="submit" class="btn btn-primary">Submit</button>
         {% if obj.id != -1 %}
         <button type="submit" class="btn btn-danger" formaction="{% url 'delete_group' obj.id %}">Delete
         </button>
         {% endif %}
-        <button type="submit" class="btn btn-primary">Submit</button>
+
     </div>
 </form>
 {% endblock %}
